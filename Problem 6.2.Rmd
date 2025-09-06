@@ -1,0 +1,82 @@
+---
+title: "Problem 6.2"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Analyze the effect of fish on zooplankton size at the Cornell Experimental Ponds
+(`cep3` data set). Assume that the six ponds were randomly chosen from a large
+number of similar ponds at the site, and that three of the six were then
+randomly selected for introductions of fish (bluegill sunfish and pumpkinseed).
+The other three ponds remained fishless. Several years later, zooplankton were
+sampled in the ponds (ignore the effect of time of sampling), and their body
+sizes were determined.
+
+Test the hypothesis that fish have no effect on zooplankton size in two
+different ways. For each approach, **write down the appropriate mathematical
+model**, show how the hypothesis is tested, and interpret the result. Use
+`log(size)` as the response, since this seems to stabilize the variance of size
+across ponds.
+
+
+(a)  Use a model of `log(size)` as the sum of the overall mean, the fixed effect of fish,
+the random effect of pond nested within fish treatment, and a random error due to
+individuals within ponds.
+
+```{r}
+library(lme4)
+library(dplyr)
+cep3 <- read.table("C:/Users/k8hil/OneDrive/Desktop/ST 415/data/cep3.txt", header = TRUE)
+
+# Log-transform
+cep3$logsize <- log(cep3$size)
+cep3$fish <- as.factor(cep3$fish)
+cep3$pond <- as.factor(cep3$pond)
+
+# Fit the model
+model_a <- lmer(logsize ~ fish + (1 | fish:pond), data = cep3)
+summary(model_a)
+
+# ANOVA
+anova_a <- anova(model_a)
+anova_a
+```
+
+
+(b)  Calculate the mean of log(size) in each pond, and use an appropriate
+$t$-test to compare the three means from the fish-containing ponds to the three
+means from the fishless ponds. That is, the input to your $t$-test should
+consist of just six data points.
+
+For comparison purpose, in (b), use the equal-variance $t$-test (read the help file of `t.test` by typing
+```
+? t.test
+```
+in R.)
+
+```{r}
+# Compute
+pond_means <- cep3 %>%
+  group_by(fish, pond) %>%
+  summarise(mean_logsize = mean(logsize), .groups = 'drop')
+
+# T-test
+ttest_b <- t.test(mean_logsize ~ fish, data = pond_means, var.equal = TRUE)
+ttest_b
+```
+
+
+(c) Compare the results of these two approaches, and comment on which one you
+prefer.
+
+```{r}
+list(
+  "ANOVA from Mixed-Effects Model (a)" = anova_a,
+  "t-test Results (b)" = ttest_b,
+  "Pond Means Used in t-test" = pond_means
+)
+```
+

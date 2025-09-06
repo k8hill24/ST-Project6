@@ -1,0 +1,49 @@
+---
+title: "Problem 6.1"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Consider the `alloy` data set, on the effect of alloy type and casting on the
+tensile strength of metal bars.
+
+```{r}
+alloy = read.table("C:/Users/k8hil/OneDrive/Desktop/ST 415/data/alloy.txt", head = TRUE)
+head(alloy)
+
+```
+
+
+> ALLOY - Three formulations of an ALLOY were prepared with four separate
+CASTINGs for each formulation (i.e., there were 12 distinct castings, so
+that CASTING is nested within ALLOY).  Two bars from each casting were 
+tested for tensile STRENGTH.  Assume that ALLOY and CASTING are both 
+random effects.
+
+Fit the appropriate ANOVA model, and estimate the variance components due to alloy,
+casting, and bar (error). What percentage of the total variation in strength is
+due to alloys, to castings within alloys, and to bars within castings?
+
+```{r}
+# Convert to factors
+alloy$alloy <- as.factor(alloy$alloy)
+alloy$casting <- as.factor(alloy$casting)
+
+library(lme4)
+
+# Fit nested
+model <- lmer(strength ~ 1 + (1 | alloy/casting), data = alloy)
+summary(model)
+
+# Extract
+vc <- as.data.frame(VarCorr(model))
+
+total_var <- sum(vc$vcov)
+vc$Percent <- round(100 * vc$vcov / total_var, 2)
+vc
+```
+
+

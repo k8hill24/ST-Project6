@@ -1,6 +1,6 @@
 
 library(ggplot2)
-path <- read.csv("C:/Users/k8hil/OneDrive/Desktop/ST 412/Week 8/galapagos.csv")
+path <- read.csv("galapagos.csv")
 head(path)
 
 # 1 Fit the Model
@@ -58,6 +58,7 @@ summary(model_clean)
 which(lev > 2*mean(lev))
 which(cook > 4/(nrow(path) - length(model$coefficients)))
 which(abs(std_resid) > 2)
+
 
 
 
